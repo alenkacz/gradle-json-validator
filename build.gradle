@@ -8,7 +8,6 @@ buildscript {
 }
 
 group 'cz.alenkacz.gradle'
-archivesBaseName = 'gradle-json-validator'
 version = version == 'unspecified' ? 'DEVELOPER-SNAPSHOT' : version
 
 apply plugin: 'groovy'
