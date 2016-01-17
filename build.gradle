@@ -73,7 +73,7 @@ bintray {
     pkg {
         repo = 'maven'
         name = 'gradle-json-validator'
-        desc = 'Provides task that is capable of json validation during a Gradle build. Json schema is used for this.'
+        desc = 'Gradle plugin that with a task that is capable of json validation during a Gradle build. Json schema is used for that.'
         licenses = ['MIT']
         vcsUrl = 'https://github.com/alenkacz/gradle-json-validator.git'
         websiteUrl = 'https://github.com/alenkacz/gradle-json-validator'
