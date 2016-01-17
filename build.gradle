@@ -1,11 +1,23 @@
-group 'cz.alenkacz'
-version '1.0-SNAPSHOT'
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.5'
+    }
+}
+
+group 'cz.alenkacz.gradle'
+archivesBaseName = 'gradle-json-validator'
+version = version == 'unspecified' ? 'DEVELOPER-SNAPSHOT' : version
 
 apply plugin: 'groovy'
 apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'com.jfrog.bintray'
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 sourceCompatibility = '1.8'
@@ -43,4 +55,34 @@ task createClasspathManifest {
 // Add the classpath file to the test runtime classpath
 dependencies {
     testRuntime files(createClasspathManifest)
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    configurations = ['archives']
+    publish = true
+    pkg {
+        repo = 'maven'
+        name = 'gradle-json-validator'
+        desc = 'Provides task that is capable of json validation during a Gradle build. Json schema is used for this.'
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/alenkacz/gradle-json-validator.git'
+        websiteUrl = 'https://github.com/alenkacz/gradle-json-validator'
+        issueTrackerUrl = 'https://github.com/alenkacz/gradle-json-validator/issues'
+        labels = ['json', 'validation', 'schema', 'json schema', 'gradle']
+        version {
+            name = project.version
+            vcsTag = project.version
+        }
+    }
 }
