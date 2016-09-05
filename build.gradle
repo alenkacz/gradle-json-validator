@@ -1,9 +1,13 @@
 buildscript {
     repositories {
         jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.5'
+        classpath "com.gradle.publish:plugin-publish-plugin:0.9.5"
     }
 }
 
@@ -14,6 +18,7 @@ apply plugin: 'groovy'
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'com.jfrog.bintray'
+apply plugin: "com.gradle.plugin-publish"
 
 repositories {
     jcenter()
@@ -23,7 +28,7 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "2.10"
+    gradleVersion = "3.0"
 }
 
 dependencies {
@@ -82,6 +87,22 @@ bintray {
         version {
             name = project.version
             vcsTag = project.version
+        }
+    }
+}
+// version = "0.9.10"
+// group = "cz.alenkacz.gradle.jsonvalidator"
+
+pluginBundle {
+    website = 'https://github.com/alenkacz/gradle-json-validator'
+    vcsUrl = 'https://github.com/alenkacz/gradle-json-validator'
+    description = 'Gradle plugin for json validation (json schema)'
+    tags = ['json', 'schema', 'validation']
+
+    plugins {
+        marathonPlugin {
+            id = 'cz.alenkacz.gradle.jsonvalidator'
+            displayName = 'Gradle Json Schema Validator'
         }
     }
 }
