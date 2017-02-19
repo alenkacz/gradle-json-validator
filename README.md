@@ -27,7 +27,7 @@ Usage
       jsonSchema = project.file("schema.json")
     }
 
-Json schema validation
+JSON schema validation
 ====================
 For some build pipelines it might be useful to be able to check schema files for syntax errors as a part of the build. To make that work, use the following setup and run the task **validateJsonSchema**:
 
