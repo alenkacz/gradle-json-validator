@@ -18,7 +18,7 @@ Usage
 		}
 	}
 
-	apply plugin: 'cz.alenkacz.gradle.jsonvalidator'
+	apply plugin: 'json-validator'
 	
     import cz.alenkacz.gradle.jsonvalidator.ValidateJsonTask
     

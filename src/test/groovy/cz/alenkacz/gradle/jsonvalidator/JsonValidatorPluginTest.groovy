@@ -13,4 +13,13 @@ class JsonValidatorPluginTest extends Specification {
         then:
         project.tasks.validateJson instanceof ValidateJsonTask
     }
+
+    def "add tasks to the project for short plugin name"() {
+        when:
+        Project project = ProjectBuilder.builder().build()
+        project.plugins.apply "json-validator"
+
+        then:
+        project.tasks.validateJson instanceof ValidateJsonTask
+    }
 }
