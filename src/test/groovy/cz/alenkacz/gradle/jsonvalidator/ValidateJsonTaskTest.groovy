@@ -61,6 +61,7 @@ class ValidateJsonTaskTest extends Specification  {
                 .buildAndFail()
 
         then:
+        println(actual.output)
         actual.task(":validateCustomJson").outcome == TaskOutcome.FAILED
     }
 
@@ -78,7 +79,7 @@ class ValidateJsonTaskTest extends Specification  {
     def getInvalidJson() {
         '''
             {
-                "name": "A green door",
+                "name": 1,
                 "price": 12.50,
                 "tags": ["home", "green"]
             }
@@ -96,6 +97,10 @@ class ValidateJsonTaskTest extends Specification  {
                     "id": {
                         "description": "The unique identifier for a product",
                         "type": "integer"
+                    },
+                    "name": {
+                        "description": "Name of the person",
+                        "type": "string"
                     }
                 },
                 "required": ["id"]
