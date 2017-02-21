@@ -95,9 +95,9 @@ bintray {
         }
     }
 }
-// version = "0.9.10"
-// group = "cz.alenkacz.gradle.jsonvalidator"
 
+project.ext.set('gradle.publish.key', System.getenv('GRADLE_PORTAL_KEY'))
+project.ext.set('gradle.publish.secret', System.getenv('GRADLE_PORTAL_SECRET'))
 pluginBundle {
     website = 'https://github.com/alenkacz/gradle-json-validator'
     vcsUrl = 'https://github.com/alenkacz/gradle-json-validator'
@@ -105,7 +105,7 @@ pluginBundle {
     tags = ['json', 'schema', 'validation']
 
     plugins {
-        marathonPlugin {
+        jsonValidatorPlugin {
             id = 'cz.alenkacz.gradle.jsonvalidator'
             displayName = 'Gradle Json Schema Validator'
         }
