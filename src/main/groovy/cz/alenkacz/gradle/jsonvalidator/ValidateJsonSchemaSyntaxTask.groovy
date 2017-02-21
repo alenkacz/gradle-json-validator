@@ -8,6 +8,10 @@ import groovy.io.FileType
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
+/**
+ * Recursively search for all files in 'schemaFolder' and validates that the file is syntactically valid json schema
+ * If invalid json schema found, it prints out the name of that file and the whole task ends with a failure
+ */
 class ValidateJsonSchemaSyntaxTask extends DefaultTask {
     private static final ObjectMapper MAPPER = JacksonUtils.newMapper();
     private static final def validator = new SyntaxValidator(ValidationConfiguration.byDefault())
@@ -17,8 +21,7 @@ class ValidateJsonSchemaSyntaxTask extends DefaultTask {
     @TaskAction
     def validateSchema() {
         if (pluginExtension.schemaFolder == null) {
-            logger.info("No schema folder provided, nothing to validate")
-            return
+            throw new IllegalArgumentException("You need to provide 'schemaFolder' property, otherwise the plugin cannot validate your schema files.")
         }
         File schemaFolder = new File(pluginExtension.schemaFolder)
         if (!schemaFolder.exists() || !schemaFolder.isDirectory()) {
