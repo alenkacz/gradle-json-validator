@@ -23,8 +23,9 @@ Usage
     import cz.alenkacz.gradle.jsonvalidator.ValidateJsonTask
     
     task validateCustomJson(type: ValidateJsonTask) {
-      targetJsonFile = project.file("target.json")
-      jsonSchema = project.file("schema.json")
+      targetJsonFile = file("target.json") // only one of targetJsonFile or targetJsonDirectory can be specified 
+      targetJsonDirectory = file("directoryWithJsons") // only one of targetJsonFile or targetJsonDirectory can be specified
+      jsonSchema = file("schema.json")
     }
 
 JSON schema syntax check

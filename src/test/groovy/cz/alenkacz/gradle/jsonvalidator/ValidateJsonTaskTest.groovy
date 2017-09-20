@@ -9,35 +9,29 @@ import spock.lang.Specification
 
 class ValidateJsonTaskTest extends Specification  {
     @Rule final TemporaryFolder targetProjectDir = new TemporaryFolder()
+    String pluginClasspath
     File gradleBuildFile
     File jsonSchemaFile
     File targetJsonFile
+    File targetJsonFolder
 
     def setup() {
         gradleBuildFile = targetProjectDir.newFile('build.gradle')
-        def pluginClasspath = sourceCodeOfThisPluginClasspath()
-        gradleBuildFile << """
-            buildscript {
-                dependencies {
-                    classpath files($pluginClasspath)
-                }
-            }
-            apply plugin: 'cz.alenkacz.gradle.jsonvalidator'
-
-            import cz.alenkacz.gradle.jsonvalidator.ValidateJsonTask
-
-            task validateCustomJson(type: ValidateJsonTask) {
-                targetJsonFile = project.file("target.json")
-                jsonSchema = project.file("schema.json")
-            }
-        """
+        pluginClasspath = sourceCodeOfThisPluginClasspath()
+        gradleBuildFile << getSingleFileGradleFile()
 
         jsonSchemaFile = targetProjectDir.newFile('schema.json')
         targetJsonFile = targetProjectDir.newFile('target.json')
+
+        targetJsonFolder = targetProjectDir.newFolder("json")
+        final FileTreeBuilder treeBuilder = new FileTreeBuilder(targetJsonFolder)
+        treeBuilder.file("test.json", getInvalidJson())
+        treeBuilder.file("test2.json", getInvalidJson())
     }
 
     def "succeed on valid json"() {
         given:
+        gradleBuildFile.text = getSingleFileGradleFile()
         jsonSchemaFile << getJsonSchema()
         targetJsonFile << getCorrectJson()
         when:
@@ -52,6 +46,7 @@ class ValidateJsonTaskTest extends Specification  {
 
     def "fail on invalid json"() {
         given:
+        gradleBuildFile.text = getSingleFileGradleFile()
         jsonSchemaFile << getJsonSchema()
         targetJsonFile << getInvalidJson()
         when:
@@ -61,7 +56,25 @@ class ValidateJsonTaskTest extends Specification  {
                 .buildAndFail()
 
         then:
-        println(actual.output)
+        actual.output.contains("One or more validation errors found")
+        actual.task(":validateCustomJson").outcome == TaskOutcome.FAILED
+    }
+
+    def "accept also folder with json files and fail on invalid file in that folder"() {
+        given:
+        gradleBuildFile.text = getFolderGradleFile()
+        jsonSchemaFile << getJsonSchema()
+
+        when:
+        def actual = GradleRunner.create()
+                .withProjectDir(targetProjectDir.root)
+                .withArguments(':validateCustomJson', '--stacktrace')
+                .buildAndFail()
+
+        then:
+        actual.output.contains("One or more validation errors found")
+        actual.output.contains("test.json")
+        actual.output.contains("test2.json")
         actual.task(":validateCustomJson").outcome == TaskOutcome.FAILED
     }
 
@@ -106,6 +119,42 @@ class ValidateJsonTaskTest extends Specification  {
                 "required": ["id"]
             }
         '''
+    }
+
+    def getSingleFileGradleFile() {
+        """
+            buildscript {
+                dependencies {
+                    classpath files($pluginClasspath)
+                }
+            }
+            apply plugin: 'cz.alenkacz.gradle.jsonvalidator'
+
+            import cz.alenkacz.gradle.jsonvalidator.ValidateJsonTask
+
+            task validateCustomJson(type: ValidateJsonTask) {
+                targetJsonFile = file("target.json")
+                jsonSchema = file("schema.json")
+            }
+        """
+    }
+
+    def getFolderGradleFile() {
+        """
+            buildscript {
+                dependencies {
+                    classpath files($pluginClasspath)
+                }
+            }
+            apply plugin: 'cz.alenkacz.gradle.jsonvalidator'
+
+            import cz.alenkacz.gradle.jsonvalidator.ValidateJsonTask
+
+            task validateCustomJson(type: ValidateJsonTask) {
+                targetJsonDirectory = file("json")
+                jsonSchema = project.file("schema.json")
+            }
+        """
     }
 /*
     This is needed to get the current plugin to the classpath. See https://docs.gradle.org/current/userguide/test_kit.html
