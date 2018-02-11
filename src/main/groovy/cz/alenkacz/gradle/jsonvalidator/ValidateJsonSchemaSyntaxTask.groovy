@@ -21,11 +21,11 @@ class ValidateJsonSchemaSyntaxTask extends DefaultTask {
     @TaskAction
     def validateSchema() {
         if (pluginExtension.schemaFolder == null) {
-            throw new IllegalArgumentException("You need to provide 'schemaFolder' property, otherwise the plugin cannot validate your schema files.")
+            throw new IllegalArgumentException("You need to provide 'schemaFolder' property, otherwise the plugin cannot validate your json files.")
         }
         File schemaFolder = new File(pluginExtension.schemaFolder)
         if (!schemaFolder.exists() || !schemaFolder.isDirectory()) {
-            throw new IllegalArgumentException("Provided schema folder ${pluginExtension.schemaFolder} does not exist or is not a directory")
+            throw new IllegalArgumentException("Provided schema folder '${pluginExtension.schemaFolder}' does not exist or is not a directory")
         }
         def schemaFiles = []
         schemaFolder.eachFileRecurse (FileType.FILES) { file ->

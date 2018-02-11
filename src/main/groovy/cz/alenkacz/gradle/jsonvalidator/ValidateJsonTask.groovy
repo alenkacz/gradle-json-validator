@@ -41,7 +41,6 @@ class ValidateJsonTask extends DefaultTask {
             List<ValidationError> violations = []
             targetJsonFilesList.each {
                 try {
-                    println(it.absolutePath)
                     schema.validate(new JSONObject(new FileInputStream(it).getText()))
                 } catch (ValidationException e) {
                     violations << new ValidationError(jsonFilePath: it.absolutePath, violations: getViolations(e))
