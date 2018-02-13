@@ -4,7 +4,7 @@
 
 Provides json validation as a part of your gradle build pipeline.
 
-This plugin implements a custom task type, [ValidateJsonTask](https://github.com/alenkacz/gradle-json-validator/blob/master/src/main/groovy/cz/alenkacz/gradle/jsonvalidator/ValidateJsonTask.groovy). This task expects two properties - *targetJsonFile* and *jsonSchemaFile* (instead of *targetJsonFile* you can use *targetJsonDirectory* and then all files in that directory will be validated). If you need to validate more jsons as a part of one build, you will have to create as many custom tasks as the number of json schema files (see *validateCustomJson* in the example below).
+This plugin implements a custom task type, [ValidateJsonTask](https://github.com/alenkacz/gradle-json-validator/blob/master/src/main/groovy/cz/alenkacz/gradle/jsonvalidator/ValidateJsonTask.groovy). This task expects two properties - *targetJsonFile* and *jsonSchemaFile* (instead of *targetJsonFile* you can use *targetJsonDirectory* and then all files in that directory will be validated). If that directory contains both json and non-json files, the task will fail for non-json files. If you want to validate only files with .json extension use the `onlyWithJsonExtension` property. If you need to validate more jsons as a part of one build, you will have to create as many custom tasks as the number of json schema files (see *validateCustomJson* in the example below).
 
 Usage
 ====================
@@ -26,6 +26,7 @@ Usage
       targetJsonFile = file("target.json") // only one of targetJsonFile or targetJsonDirectory can be specified 
       targetJsonDirectory = file("directoryWithJsons") // only one of targetJsonFile or targetJsonDirectory can be specified
       jsonSchema = file("schema.json")
+      onlyWithJsonExtension = true // default is false, this makes sense only when using targetJsonDirectory, it ignores all files apart from those who do not have .json file extension
     }
 
 JSON schema syntax check

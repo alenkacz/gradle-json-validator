@@ -98,6 +98,25 @@ class ValidateJsonTaskTest extends Specification  {
         actual.task(":validateCustomJson").outcome == TaskOutcome.FAILED
     }
 
+    def "not fail on non-json file when using onlyWithJsonExtension"() {
+        given:
+        final FileTreeBuilder treeBuilder = new FileTreeBuilder(targetProjectDir.newFolder("non-json-folder"))
+        treeBuilder.file("test.json", getCorrectJson())
+        treeBuilder.file("nonjson.txt", "randomtext")
+        gradleBuildFile.text = getFolderGradleFile("non-json-folder", true)
+        jsonSchemaFile << getJsonSchema()
+
+        when:
+        def actual = GradleRunner.create()
+                .withProjectDir(targetProjectDir.root)
+                .withArguments(':validateCustomJson', '--stacktrace')
+                .build()
+
+        then:
+        print(actual.output)
+        actual.task(":validateCustomJson").outcome == TaskOutcome.SUCCESS
+    }
+
     def getCorrectJson() {
         '''
             {
@@ -159,7 +178,7 @@ class ValidateJsonTaskTest extends Specification  {
         """
     }
 
-    def getFolderGradleFile(folderName = "json") {
+    def getFolderGradleFile(folderName = "json", onlyWithJsonExtension = false) {
         """
             buildscript {
                 dependencies {
@@ -173,6 +192,7 @@ class ValidateJsonTaskTest extends Specification  {
             task validateCustomJson(type: ValidateJsonTask) {
                 targetJsonDirectory = file("$folderName")
                 jsonSchema = project.file("schema.json")
+                onlyWithJsonExtension = ${onlyWithJsonExtension ? "true" : "false"}
             }
         """
     }
