@@ -78,6 +78,45 @@ class ValidateJsonTaskTest extends Specification  {
         actual.task(":validateCustomJson").outcome == TaskOutcome.FAILED
     }
 
+    def "fail on non-json file"() {
+        given:
+        final FileTreeBuilder treeBuilder = new FileTreeBuilder(targetProjectDir.newFolder("non-json-folder"))
+        treeBuilder.file("test.json", getInvalidJson())
+        treeBuilder.file("nonjson.txt", "randomtext")
+        gradleBuildFile.text = getFolderGradleFile("non-json-folder")
+        jsonSchemaFile << getJsonSchema()
+
+        when:
+        def actual = GradleRunner.create()
+                .withProjectDir(targetProjectDir.root)
+                .withArguments(':validateCustomJson', '--stacktrace')
+                .buildAndFail()
+
+        then:
+        actual.output.contains("File is not valid json")
+        actual.output.contains("nonjson.txt")
+        actual.task(":validateCustomJson").outcome == TaskOutcome.FAILED
+    }
+
+    def "not fail on non-json file when using onlyWithJsonExtension"() {
+        given:
+        final FileTreeBuilder treeBuilder = new FileTreeBuilder(targetProjectDir.newFolder("non-json-folder"))
+        treeBuilder.file("test.json", getCorrectJson())
+        treeBuilder.file("nonjson.txt", "randomtext")
+        gradleBuildFile.text = getFolderGradleFile("non-json-folder", true)
+        jsonSchemaFile << getJsonSchema()
+
+        when:
+        def actual = GradleRunner.create()
+                .withProjectDir(targetProjectDir.root)
+                .withArguments(':validateCustomJson', '--stacktrace')
+                .build()
+
+        then:
+        print(actual.output)
+        actual.task(":validateCustomJson").outcome == TaskOutcome.SUCCESS
+    }
+
     def getCorrectJson() {
         '''
             {
@@ -139,7 +178,7 @@ class ValidateJsonTaskTest extends Specification  {
         """
     }
 
-    def getFolderGradleFile() {
+    def getFolderGradleFile(folderName = "json", onlyWithJsonExtension = false) {
         """
             buildscript {
                 dependencies {
@@ -151,8 +190,9 @@ class ValidateJsonTaskTest extends Specification  {
             import cz.alenkacz.gradle.jsonvalidator.ValidateJsonTask
 
             task validateCustomJson(type: ValidateJsonTask) {
-                targetJsonDirectory = file("json")
+                targetJsonDirectory = file("$folderName")
                 jsonSchema = project.file("schema.json")
+                onlyWithJsonExtension = ${onlyWithJsonExtension ? "true" : "false"}
             }
         """
     }
