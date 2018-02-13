@@ -9,6 +9,7 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.InputFile
+import org.json.JSONException
 import org.json.JSONObject
 import org.json.JSONTokener
 
@@ -44,6 +45,8 @@ class ValidateJsonTask extends DefaultTask {
                     schema.validate(new JSONObject(new FileInputStream(it).getText()))
                 } catch (ValidationException e) {
                     violations << new ValidationError(jsonFilePath: it.absolutePath, violations: getViolations(e))
+                } catch (JSONException e) {
+                    violations << new ValidationError(jsonFilePath: it.absolutePath, violations: ["File is not valid json: ${e.message}"])
                 }
             }
             if (!violations.empty) {
