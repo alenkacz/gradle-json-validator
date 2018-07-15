@@ -1,14 +1,16 @@
 package cz.alenkacz.gradle.jsonvalidator
 
 import groovy.io.FileType
+import org.everit.json.schema.ArraySchema
 import org.everit.json.schema.Schema
 import org.everit.json.schema.ValidationException
 import org.everit.json.schema.loader.SchemaLoader
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.InputFile
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -50,7 +52,11 @@ class ValidateJsonTask extends DefaultTask {
             List<ValidationError> violations = []
             targetJsonFilesList.each {
                 try {
-                    schema.validate(new JSONObject(new FileInputStream(it).getText()))
+                    if (schema instanceof ArraySchema) {
+                        schema.validate(new JSONArray(new FileInputStream(it).getText()))
+                    } else {
+                        schema.validate(new JSONObject(new FileInputStream(it).getText()))
+                    }
                 } catch (ValidationException e) {
                     violations << new ValidationError(jsonFilePath: it.absolutePath, violations: getViolations(e))
                 } catch (JSONException e) {

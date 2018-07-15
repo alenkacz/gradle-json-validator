@@ -1,6 +1,6 @@
 package cz.alenkacz.gradle.jsonvalidator
 
-import org.gradle.api.Project
+
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
@@ -49,6 +49,52 @@ class ValidateJsonTaskTest extends Specification  {
         gradleBuildFile.text = getSingleFileGradleFile()
         jsonSchemaFile << getJsonSchema()
         targetJsonFile << getInvalidJson()
+        when:
+        def actual = GradleRunner.create()
+                .withProjectDir(targetProjectDir.root)
+                .withArguments(':validateCustomJson', '--stacktrace')
+                .buildAndFail()
+
+        then:
+        actual.output.contains("One or more validation errors found")
+        actual.task(":validateCustomJson").outcome == TaskOutcome.FAILED
+    }
+
+    def "succeed on valid json with array as top level object"() {
+        given:
+        gradleBuildFile.text = getSingleFileGradleFile()
+        jsonSchemaFile << getArrayJsonSchema()
+        targetJsonFile << getValidJsonArray()
+        when:
+        def actual = GradleRunner.create()
+                .withProjectDir(targetProjectDir.root)
+                .withArguments(':validateCustomJson', '--stacktrace')
+                .build()
+
+        then:
+        actual.task(":validateCustomJson").outcome == TaskOutcome.SUCCESS
+    }
+
+    def "succeed on valid json empty array"() {
+        given:
+        gradleBuildFile.text = getSingleFileGradleFile()
+        jsonSchemaFile << getArrayJsonSchema()
+        targetJsonFile << getValidEmptyJsonArray()
+        when:
+        def actual = GradleRunner.create()
+                .withProjectDir(targetProjectDir.root)
+                .withArguments(':validateCustomJson', '--stacktrace')
+                .build()
+
+        then:
+        actual.task(":validateCustomJson").outcome == TaskOutcome.SUCCESS
+    }
+
+    def "fail on invalid json with array as top level object"() {
+        given:
+        gradleBuildFile.text = getSingleFileGradleFile()
+        jsonSchemaFile << getArrayJsonSchema()
+        targetJsonFile << getInvalidJsonArray()
         when:
         def actual = GradleRunner.create()
                 .withProjectDir(targetProjectDir.root)
@@ -134,6 +180,65 @@ class ValidateJsonTaskTest extends Specification  {
                 "name": 1,
                 "price": 12.50,
                 "tags": ["home", "green"]
+            }
+        '''
+    }
+
+
+    def getValidJsonArray() {
+        '''
+            [{
+                "id": 1,
+                "name": "A green door",
+                "price": 12.50,
+                "tags": ["home", "green"]
+            },{
+                "id": 2,
+                "name": "Rocket",
+                "price": 3500.0,
+                "tags": ["rocket", "explosive"]
+            }]
+        '''
+    }
+
+    def getValidEmptyJsonArray() {
+        '''
+            []
+        '''
+    }
+
+    def getInvalidJsonArray() {
+        '''
+            [{
+                "name": "A green door",
+                "price": 12.50,
+                "tags": ["home", "green"]
+            }]
+        '''
+    }
+
+
+    def getArrayJsonSchema() {
+        '''
+            {
+                "$schema": "http://json-schema.org/draft-04/schema#",
+                "title": "Products",
+                "description": "Acme's catalog",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "description": "The unique identifier for a product",
+                            "type": "integer"
+                        },
+                        "name": {
+                            "description": "Name of the person",
+                            "type": "string"
+                        }
+                    },
+                    "required": ["id"]
+                }
             }
         '''
     }
