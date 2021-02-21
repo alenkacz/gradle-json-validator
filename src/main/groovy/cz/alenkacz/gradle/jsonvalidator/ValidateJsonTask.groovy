@@ -29,6 +29,7 @@ class ValidateJsonTask extends DefaultTask {
     @Input
     @Optional
     Boolean onlyWithJsonExtension
+
     @TaskAction
     def validateJson() {
         // check files exist
